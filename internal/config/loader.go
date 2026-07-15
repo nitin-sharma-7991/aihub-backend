@@ -31,9 +31,19 @@ func Load() (*Config, error) {
 			ReadTimeout:  viper.GetInt("READ_TIMEOUT"),
 			WriteTimeout: viper.GetInt("WRITE_TIMEOUT"),
 		},
+
+		DB: DatabaseConfig{
+			Host:     viper.GetString("DB_HOST"),
+			Port:     viper.GetString("DB_PORT"),
+			User:     viper.GetString("DB_USER"),
+			Password: viper.GetString("DB_PASSWORD"),
+			Name:     viper.GetString("DB_NAME"),
+			SSLMode:  viper.GetString("DB_SSLMODE"),
+			TimeZone: viper.GetString("DB_TIMEZONE"),
+		},
 	}
 
-	// Basic Validation
+	// Basic App Validation
 	if cfg.App.Name == "" {
 		return nil, fmt.Errorf("APP_NAME is required")
 	}
@@ -58,5 +68,21 @@ func Load() (*Config, error) {
 		cfg.App.WriteTimeout = 10
 	}
 
+	// Basic DB Validation
+	if cfg.DB.Host == "" {
+		return nil, fmt.Errorf("DB_HOST is required")
+	}
+
+	if cfg.DB.Port == "" {
+		cfg.DB.Port = "5432"
+	}
+
+	if cfg.DB.SSLMode == "" {
+		cfg.DB.SSLMode = "disable"
+	}
+
+	if cfg.DB.TimeZone == "" {
+		cfg.DB.TimeZone = "UTC"
+	}
 	return cfg, nil
 }
