@@ -1,4 +1,4 @@
-package handler
+package router
 
 import (
 	"net/http"
@@ -6,12 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Health returns the application's health status.
 func Health(c *gin.Context) {
-
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "UP",
-		"service": "AIHub",
+		"service": "AIHub Backend",
 		"version": "v1",
 	})
 }

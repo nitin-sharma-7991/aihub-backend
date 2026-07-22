@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nitin-sharma-7991/aihub-backend/internal/config"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/config"
 	"go.uber.org/zap"
 )
 
