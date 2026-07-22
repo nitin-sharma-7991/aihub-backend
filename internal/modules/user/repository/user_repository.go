@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/nitin-sharma-7991/aihub-backend/internal/model"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/model"
 	"gorm.io/gorm"
 )
 

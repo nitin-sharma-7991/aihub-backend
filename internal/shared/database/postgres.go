@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nitin-sharma-7991/aihub-backend/internal/config"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/nitin-sharma-7991/aihub-backend/internal/apperrors"
-	"github.com/nitin-sharma-7991/aihub-backend/internal/dto"
-	"github.com/nitin-sharma-7991/aihub-backend/internal/model"
-	"github.com/nitin-sharma-7991/aihub-backend/internal/repository"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/dto"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/model"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/repository"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/apperrors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -23,12 +23,12 @@ type UserService interface {
 }
 
 type userService struct {
-	repository repository.UserRepository
+	userRepo repository.UserRepository
 }
 
 func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{
-		repository: repo,
+		userRepo: repo,
 	}
 }
 
@@ -38,7 +38,7 @@ func (s *userService) Create(
 ) (*dto.UserResponse, error) {
 
 	// Check duplicate email
-	existingUser, err := s.repository.FindByEmail(ctx, req.Email)
+	existingUser, err := s.userRepo.FindByEmail(ctx, req.Email)
 
 	if err == nil && existingUser != nil {
 		return nil, apperrors.ErrEmailAlreadyExists
@@ -64,15 +64,11 @@ func (s *userService) Create(
 		Password: string(hashedPassword),
 	}
 
-	if err := s.repository.Create(ctx, user); err != nil {
+	if err := s.userRepo.Create(ctx, user); err != nil {
 		return nil, err
 	}
 
-	return &dto.UserResponse{
-		ID:    user.ID,
-		Name:  user.Name,
-		Email: user.Email,
-	}, nil
+	return toUserResponse(user), nil
 }
 
 func (s *userService) GetByID(
@@ -80,7 +76,7 @@ func (s *userService) GetByID(
 	id uint,
 ) (*dto.UserResponse, error) {
 
-	user, err := s.repository.FindByID(ctx, id)
+	user, err := s.userRepo.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperrors.ErrUserNotFound
@@ -89,11 +85,7 @@ func (s *userService) GetByID(
 		return nil, err
 	}
 
-	return &dto.UserResponse{
-		ID:    user.ID,
-		Name:  user.Name,
-		Email: user.Email,
-	}, nil
+	return toUserResponse(user), nil
 }
 
 func (s *userService) Update(
@@ -102,7 +94,7 @@ func (s *userService) Update(
 	req dto.UpdateUserRequest,
 ) (*dto.UserResponse, error) {
 
-	user, err := s.repository.FindByID(ctx, id)
+	user, err := s.userRepo.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperrors.ErrUserNotFound
@@ -113,22 +105,18 @@ func (s *userService) Update(
 
 	user.Name = req.Name
 
-	if err := s.repository.Update(ctx, user); err != nil {
+	if err := s.userRepo.Update(ctx, user); err != nil {
 		return nil, err
 	}
 
-	return &dto.UserResponse{
-		ID:    user.ID,
-		Name:  user.Name,
-		Email: user.Email,
-	}, nil
+	return toUserResponse(user), nil
 }
 
 func (s *userService) Delete(
 	ctx context.Context,
 	id uint,
 ) error {
-	user, err := s.repository.FindByID(ctx, id)
+	user, err := s.userRepo.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return apperrors.ErrUserNotFound
@@ -137,5 +125,14 @@ func (s *userService) Delete(
 		return err
 	}
 
-	return s.repository.Delete(ctx, user.ID)
+	return s.userRepo.Delete(ctx, user.ID)
+}
+
+//helper
+func toUserResponse(user *model.User) *dto.UserResponse {
+	return &dto.UserResponse{
+		ID:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
+	}
 }

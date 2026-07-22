@@ -9,10 +9,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nitin-sharma-7991/aihub-backend/internal/config"
-	"github.com/nitin-sharma-7991/aihub-backend/internal/logger"
-	"github.com/nitin-sharma-7991/aihub-backend/internal/router"
+
+	user "github.com/nitin-sharma-7991/aihub-backend/internal/modules/user"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/server"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/config"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/database"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/logger"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/router"
+
 	"go.uber.org/zap"
 )
 
@@ -31,19 +35,29 @@ func main() {
 	}
 	defer logg.Sync()
 
+	// Set Gin mode
 	if cfg.App.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	} else {
 		gin.SetMode(gin.DebugMode)
 	}
 
+	// Initialize database
+	db, err := database.New(cfg)
+	if err != nil {
+		logg.Fatal("Failed to connect database", zap.Error(err))
+	}
+
+	// Initialize User Module
+	userModule := user.New(db)
+
 	// Initialize router
-	r := router.New()
+	r := router.New(userModule.Handler)
 
 	// Initialize server
 	srv := server.New(cfg, logg, r)
 
-	// Start server in a goroutine
+	// Start server
 	go func() {
 		if err := srv.Start(); err != nil && !errors.Is(err, context.Canceled) {
 			logg.Fatal("Failed to start server", zap.Error(err))
