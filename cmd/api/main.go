@@ -48,6 +48,11 @@ func main() {
 		logg.Fatal("Failed to connect database", zap.Error(err))
 	}
 
+	// Run database migrations
+	if err := database.Migrate(db); err != nil {
+		logg.Fatal("Database migration failed", zap.Error(err))
+	}
+
 	// Initialize User Module
 	userModule := user.New(db)
 
