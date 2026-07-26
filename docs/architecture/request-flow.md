@@ -1,18 +1,6 @@
-# Request Lifecycle
+# Request Flow
 
-Version: 0.1.0
-
-Status: Stable
-
----
-
-## Purpose
-
-This document explains how every HTTP request travels through AIHub.
-
----
-
-## Flow
+Every HTTP request follows the same lifecycle.
 
 ```
 Client
@@ -62,125 +50,38 @@ Handler
 JSON Response
 ```
 
----
-
-## Step 1
-
-Client sends HTTP request.
-
-Example
-
-POST /users
-
----
-
-## Step 2
-
-Router finds matching endpoint.
-
-```
-POST /users
-```
-
-↓
-
-UserHandler.Create()
-
----
-
-## Step 3
-
-Middleware executes.
-
-Examples
-
-Logger
-
-Recovery
-
-Request ID
-
-Authentication (future)
-
----
-
-## Step 4
-
-Handler
-
-Responsibilities
-
-- Parse request
-- Validate request
-- Call service
-- Return JSON
-
-No business logic.
-
----
-
-## Step 5
-
-Service
+## Handler
 
 Responsible for
 
-Business Rules
+- Validation
+- Parsing Request
+- Returning Response
 
-Example
-
-Duplicate Email Check
-
-Password Hashing
-
-Validation
+No business logic should exist here.
 
 ---
 
-## Step 6
-
-Repository
+## Service
 
 Responsible for
 
-Database Operations only.
-
-No business logic.
-
----
-
-## Step 7
-
-GORM
-
-Converts Go structs into SQL.
+- Business rules
+- Password hashing
+- Validation
+- Error mapping
 
 ---
 
-## Step 8
+## Repository
 
-PostgreSQL
+Responsible for
 
-Stores persistent data.
+- Database queries
+- CRUD operations
 
 ---
 
-## Response Flow
+## Database
 
-Database
-
-↓
-
-Repository
-
-↓
-
-Service
-
-↓
-
-Handler
-
-↓
-
-Client
+Persistent storage using PostgreSQL.

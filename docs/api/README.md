@@ -1,93 +1,61 @@
 # API Documentation
 
-Version: 0.1.0
-
-Status: Stable
-
-Last Updated: 23 July 2026
+This directory contains documentation for all REST APIs exposed by AIHub Backend.
 
 ---
 
-# Purpose
+# Base URL
 
-This directory contains documentation for all HTTP APIs exposed by AIHub Backend.
-
-Each API document follows a consistent structure to make it easier for developers to understand request formats, responses, validation rules, business logic, and possible errors.
-
----
-
-# API Standards
-
-Every endpoint documentation includes:
-
-- Purpose
-- Endpoint
-- HTTP Method
-- Authentication
-- Headers
-- Request Body
-- Validation Rules
-- Success Response
-- Error Responses
-- Business Rules
-- Database Operation
-- Related Source Files
+```
+http://localhost:8080
+```
 
 ---
 
 # Available APIs
 
-## Health
-
-| Method | Endpoint |
+| Module | Endpoint |
 |---------|----------|
-| GET | /health |
-
----
-
-## User Module
-
-| Method | Endpoint |
-|---------|----------|
-| POST | /users |
-| GET | /users/{id} |
-| PUT | /users/{id} |
-| DELETE | /users/{id} |
+| Health | GET /health |
+| Users | POST /users |
+| Users | GET /users/:id |
+| Users | PUT /users/:id |
+| Users | DELETE /users/:id |
 
 ---
 
 # Response Format
 
-Successful response
+## Success
 
 ```json
 {
     "success": true,
-    "message": "Success",
+    "message": "Operation completed successfully",
     "data": {}
 }
 ```
 
 ---
 
-Error response
+## Error
 
 ```json
 {
     "success": false,
-    "message": "Something went wrong"
+    "message": "Error message"
 }
 ```
 
 ---
 
-# Versioning
+# HTTP Status Codes
 
-Current API Version
-
-v1
-
-Future
-
-/api/v1
-/api/v2
+| Code | Meaning |
+|------|---------|
+| 200 | Success |
+| 201 | Resource Created |
+| 400 | Bad Request |
+| 404 | Resource Not Found |
+| 409 | Conflict |
+| 500 | Internal Server Error |

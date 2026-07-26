@@ -1,40 +1,18 @@
 # Health API
 
-Version: 0.1.0
-
-Status: Stable
-
----
-
-# Purpose
-
-Checks whether the backend service is running.
+Checks whether the application is running.
 
 ---
 
 ## Endpoint
 
+```
 GET /health
+```
 
 ---
 
-## Authentication
-
-Not Required
-
----
-
-## Request Body
-
-None
-
----
-
-## Success Response
-
-Status
-
-200 OK
+## Response
 
 ```json
 {
@@ -44,22 +22,20 @@ Status
 
 ---
 
-## Business Logic
+## Status Code
 
-No business logic.
-
-Used by
-
-- Docker
-- Kubernetes
-- Load Balancer
-- Monitoring
-- Developers
+```
+200 OK
+```
 
 ---
 
-## Related Source Files
+## Purpose
 
-internal/shared/router/router.go
+This endpoint is commonly used by:
 
-internal/shared/router/health.go
+- Load Balancers
+- Docker
+- Kubernetes
+- Monitoring Systems
+- CI/CD Pipelines

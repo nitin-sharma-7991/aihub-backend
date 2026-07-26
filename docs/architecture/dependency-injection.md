@@ -1,29 +1,46 @@
 # Dependency Injection
 
-Version: 0.1.0
+AIHub uses Constructor Dependency Injection.
 
-Status: Stable
+Example
 
----
+```
+Repository
 
-## Purpose
+↓
 
-Explain how dependencies are created.
+Service
 
----
+↓
 
-## Current Flow
+Handler
+
+↓
+
+Router
+```
+
+Example:
+
+```go
+repo := repository.NewUserRepository(db)
+
+service := service.NewUserService(repo)
+
+handler := handler.NewUserHandler(service)
+```
+
+## Benefits
+
+- Loose coupling
+- Easier testing
+- Better maintainability
+- Clear dependencies
+
+## Current Dependency Graph
 
 ```
 main.go
-
-↓
-
-config.Load()
-
-↓
-
-logger.New()
 
 ↓
 
@@ -35,43 +52,7 @@ user.New()
 
 ↓
 
-router.New()
-
-↓
-
-server.New()
-
-↓
-
-Application Starts
-```
-
----
-
-## User Module
-
-```
-user.New()
-
-↓
-
-NewRepository()
-
-↓
-
-NewService()
-
-↓
-
-NewHandler()
-```
-
----
-
-## Dependency Graph
-
-```
-Handler
+Repository
 
 ↓
 
@@ -79,25 +60,11 @@ Service
 
 ↓
 
-Repository
+Handler
 
 ↓
 
-Database
+Router
 ```
 
-Dependencies are injected from top to bottom.
-
-Objects never create their own dependencies.
-
----
-
-## Benefits
-
-✔ Loose Coupling
-
-✔ Easy Testing
-
-✔ Easy Mocking
-
-✔ Replaceable Components
+Every dependency is created only once during application startup.
