@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +9,7 @@ import (
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/dto"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/service"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/apperrors"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/response"
 )
 
 type UserHandler struct {
@@ -28,11 +28,7 @@ func (h *UserHandler) Create(ctx *gin.Context) {
 	var req dto.CreateUserRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "Invalid request payload",
-			"error":   err.Error(),
-		})
+		response.BadRequest(ctx, "Invalid request payload", err.Error())
 		return
 	}
 
@@ -40,25 +36,15 @@ func (h *UserHandler) Create(ctx *gin.Context) {
 	if err != nil {
 
 		if errors.Is(err, apperrors.ErrEmailAlreadyExists) {
-			ctx.JSON(http.StatusConflict, gin.H{
-				"success": false,
-				"message": err.Error(),
-			})
+			response.Conflict(ctx, err.Error())
 			return
 		}
 
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"message": "Internal server error",
-		})
+		response.InternalServerError(ctx)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{
-		"success": true,
-		"message": "User created successfully",
-		"data":    user,
-	})
+	response.Created(ctx, "User created successfully", user)
 }
 
 // GET /users/:id
@@ -66,10 +52,7 @@ func (h *UserHandler) GetByID(ctx *gin.Context) {
 
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "Invalid user id",
-		})
+		response.BadRequest(ctx, "Invalid user id", nil)
 		return
 	}
 
@@ -77,24 +60,15 @@ func (h *UserHandler) GetByID(ctx *gin.Context) {
 	if err != nil {
 
 		if errors.Is(err, apperrors.ErrUserNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"success": false,
-				"message": err.Error(),
-			})
+			response.NotFound(ctx, err.Error())
 			return
 		}
 
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"message": "Internal server error",
-		})
+		response.InternalServerError(ctx)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    user,
-	})
+	response.Success(ctx, "User fetched successfully", user)
 }
 
 // PUT /users/:id
@@ -102,21 +76,14 @@ func (h *UserHandler) Update(ctx *gin.Context) {
 
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "Invalid user id",
-		})
+		response.BadRequest(ctx, "Invalid user id", nil)
 		return
 	}
 
 	var req dto.UpdateUserRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "Invalid request payload",
-			"error":   err.Error(),
-		})
+		response.BadRequest(ctx, "Invalid request payload", err.Error())
 		return
 	}
 
@@ -129,25 +96,15 @@ func (h *UserHandler) Update(ctx *gin.Context) {
 	if err != nil {
 
 		if errors.Is(err, apperrors.ErrUserNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"success": false,
-				"message": err.Error(),
-			})
+			response.NotFound(ctx, err.Error())
 			return
 		}
 
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"message": "Internal server error",
-		})
+		response.InternalServerError(ctx)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "User updated successfully",
-		"data":    user,
-	})
+	response.Success(ctx, "User updated successfully", user)
 }
 
 // DELETE /users/:id
@@ -155,10 +112,7 @@ func (h *UserHandler) Delete(ctx *gin.Context) {
 
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "Invalid user id",
-		})
+		response.BadRequest(ctx, "Invalid user id", nil)
 		return
 	}
 
@@ -166,22 +120,13 @@ func (h *UserHandler) Delete(ctx *gin.Context) {
 	if err != nil {
 
 		if errors.Is(err, apperrors.ErrUserNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"success": false,
-				"message": err.Error(),
-			})
+			response.NotFound(ctx, err.Error())
 			return
 		}
 
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"message": "Internal server error",
-		})
+		response.InternalServerError(ctx)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "User deleted successfully",
-	})
+	response.Success(ctx, "User deleted successfully", nil)
 }

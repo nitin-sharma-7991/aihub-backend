@@ -8,7 +8,7 @@ import (
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/model"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/repository"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/apperrors"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/security"
 	"gorm.io/gorm"
 )
 
@@ -49,11 +49,7 @@ func (s *userService) Create(
 	}
 
 	// Hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword(
-		[]byte(req.Password),
-		bcrypt.DefaultCost,
-	)
-
+	hashedPassword, err := security.HashPassword(req.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +57,7 @@ func (s *userService) Create(
 	user := &model.User{
 		Name:     req.Name,
 		Email:    req.Email,
-		Password: string(hashedPassword),
+		Password: hashedPassword,
 	}
 
 	if err := s.userRepo.Create(ctx, user); err != nil {
