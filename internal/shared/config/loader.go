@@ -41,6 +41,11 @@ func Load() (*Config, error) {
 			SSLMode:  viper.GetString("DB_SSLMODE"),
 			TimeZone: viper.GetString("DB_TIMEZONE"),
 		},
+
+		JWT: JWTConfig{
+			Secret:    viper.GetString("JWT_SECRET"),
+			ExpiresIn: viper.GetString("JWT_EXPIRES_IN"),
+		},
 	}
 
 	// Basic App Validation

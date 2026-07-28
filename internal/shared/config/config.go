@@ -21,6 +21,11 @@ type DatabaseConfig struct {
 	TimeZone string
 }
 
+type JWTConfig struct {
+	Secret    string
+	ExpiresIn string
+}
+
 // Root Config
 // Config is the root configuration object.
 // Future configurations like Database, Redis, JWT, etc.
@@ -28,4 +33,5 @@ type DatabaseConfig struct {
 type Config struct {
 	App AppConfig
 	DB  DatabaseConfig
+	JWT JWTConfig
 }
