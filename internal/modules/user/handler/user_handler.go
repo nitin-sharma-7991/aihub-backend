@@ -10,6 +10,7 @@ import (
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/service"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/apperrors"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/response"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/validation"
 )
 
 type UserHandler struct {
@@ -28,7 +29,13 @@ func (h *UserHandler) Create(ctx *gin.Context) {
 	var req dto.CreateUserRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.BadRequest(ctx, "Invalid request payload", err.Error())
+
+		response.BadRequest(
+			ctx,
+			"Validation failed",
+			validation.FormatErrors(err),
+		)
+
 		return
 	}
 
@@ -83,7 +90,13 @@ func (h *UserHandler) Update(ctx *gin.Context) {
 	var req dto.UpdateUserRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.BadRequest(ctx, "Invalid request payload", err.Error())
+
+		response.BadRequest(
+			ctx,
+			"Validation failed",
+			validation.FormatErrors(err),
+		)
+
 		return
 	}
 
