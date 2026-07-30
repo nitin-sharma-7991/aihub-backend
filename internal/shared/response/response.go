@@ -56,3 +56,17 @@ func Conflict(ctx *gin.Context, message string) {
 func InternalServerError(ctx *gin.Context) {
 	JSON(ctx, http.StatusInternalServerError, false, "Internal server error", nil, nil)
 }
+
+func Forbidden(
+	ctx *gin.Context,
+	message string,
+) {
+	JSON(
+		ctx,
+		http.StatusForbidden,
+		false,
+		message,
+		nil,
+		nil,
+	)
+}

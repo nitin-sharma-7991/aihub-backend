@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -20,6 +21,14 @@ func Load() (*Config, error) {
 	// Load .env if available
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Println("Warning: .env file not found. Using environment variables.")
+	}
+
+	//Load JWT Config
+	expiresIn, err := time.ParseDuration(
+		viper.GetString("JWT_EXPIRES_IN"),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("invalid JWT_EXPIRES_IN: %w", err)
 	}
 
 	cfg := &Config{
@@ -44,7 +53,7 @@ func Load() (*Config, error) {
 
 		JWT: JWTConfig{
 			Secret:    viper.GetString("JWT_SECRET"),
-			ExpiresIn: viper.GetString("JWT_EXPIRES_IN"),
+			ExpiresIn: expiresIn,
 		},
 	}
 

@@ -1,0 +1,75 @@
+package service
+
+import (
+	"context"
+	"errors"
+
+	authDTO "github.com/nitin-sharma-7991/aihub-backend/internal/modules/auth/dto"
+	userRepository "github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/repository"
+
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/apperrors"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/config"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/security"
+)
+
+type AuthService interface {
+	Login(
+		ctx context.Context,
+		req authDTO.LoginRequest,
+	) (*authDTO.LoginResponse, error)
+}
+
+type authService struct {
+	userRepo userRepository.UserRepository
+	cfg      *config.Config
+}
+
+func NewAuthService(
+	userRepo userRepository.UserRepository,
+	cfg *config.Config,
+) AuthService {
+
+	return &authService{
+		userRepo: userRepo,
+		cfg:      cfg,
+	}
+}
+
+func (s *authService) Login(
+	ctx context.Context,
+	req authDTO.LoginRequest,
+) (*authDTO.LoginResponse, error) {
+
+	user, err := s.userRepo.FindByEmail(ctx, req.Email)
+	if err != nil {
+
+		if errors.Is(err, apperrors.ErrUserNotFound) {
+			return nil, apperrors.ErrInvalidCredentials
+		}
+
+		return nil, err
+	}
+
+	if err := security.CheckPassword(
+		user.Password,
+		req.Password,
+	); err != nil {
+		return nil, apperrors.ErrInvalidCredentials
+	}
+
+	token, err := security.GenerateJWT(
+		user.ID,
+		user.Role,
+		s.cfg.JWT.Secret,
+		s.cfg.JWT.ExpiresIn,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &authDTO.LoginResponse{
+		AccessToken: token,
+		TokenType:   "Bearer",
+		ExpiresIn:   s.cfg.JWT.ExpiresIn.String(),
+	}, nil
+}

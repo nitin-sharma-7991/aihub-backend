@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 // AppConfig contains application specific configuration.
 type AppConfig struct {
 	Name         string
@@ -23,7 +25,7 @@ type DatabaseConfig struct {
 
 type JWTConfig struct {
 	Secret    string
-	ExpiresIn string
+	ExpiresIn time.Duration
 }
 
 // Root Config
