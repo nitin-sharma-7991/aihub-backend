@@ -17,6 +17,11 @@ type AuthService interface {
 		ctx context.Context,
 		req authDTO.LoginRequest,
 	) (*authDTO.LoginResponse, error)
+
+	Me(
+		ctx context.Context,
+		userID uint,
+	) (*authDTO.MeResponse, error)
 }
 
 type authService struct {
@@ -71,5 +76,28 @@ func (s *authService) Login(
 		AccessToken: token,
 		TokenType:   "Bearer",
 		ExpiresIn:   s.cfg.JWT.ExpiresIn.String(),
+	}, nil
+}
+
+func (s *authService) Me(
+	ctx context.Context,
+	userID uint,
+) (*authDTO.MeResponse, error) {
+
+	user, err := s.userRepo.FindByID(ctx, userID)
+	if err != nil {
+
+		if errors.Is(err, apperrors.ErrUserNotFound) {
+			return nil, err
+		}
+
+		return nil, err
+	}
+
+	return &authDTO.MeResponse{
+		ID:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
+		Role:  user.Role,
 	}, nil
 }

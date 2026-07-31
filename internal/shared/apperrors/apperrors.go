@@ -13,6 +13,7 @@ var (
 	ErrExpiredToken       = errors.New("token has expired")
 	ErrUnauthorized       = errors.New("unauthorized")
 	ErrForbidden          = errors.New("forbidden")
+	ErrMissingToken       = errors.New("authorization token is required")
 
 	// Common
 	ErrInternalServer = errors.New("internal server error")
