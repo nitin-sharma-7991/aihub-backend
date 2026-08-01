@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/auth"
+	organization "github.com/nitin-sharma-7991/aihub-backend/internal/modules/organization"
 	user "github.com/nitin-sharma-7991/aihub-backend/internal/modules/user"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/server"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/config"
@@ -63,11 +64,15 @@ func main() {
 		cfg,
 	)
 
+	// Initialize Organization Module
+	orgModule := organization.New(db)
+
 	// Initialize router
 	r := router.New(
 		cfg,
 		userModule.Handler,
 		authModule.Handler,
+		orgModule.Handler,
 	)
 
 	// Initialize server

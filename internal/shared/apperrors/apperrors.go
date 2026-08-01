@@ -15,6 +15,10 @@ var (
 	ErrForbidden          = errors.New("forbidden")
 	ErrMissingToken       = errors.New("authorization token is required")
 
+	// Organization
+	ErrOrganizationAlreadyExists = errors.New("organization already exists")
+	ErrOrganizationNotFound      = errors.New("organization not found")
+
 	// Common
 	ErrInternalServer = errors.New("internal server error")
 )
