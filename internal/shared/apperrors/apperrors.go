@@ -19,6 +19,10 @@ var (
 	ErrOrganizationAlreadyExists = errors.New("organization already exists")
 	ErrOrganizationNotFound      = errors.New("organization not found")
 
+	// Membership
+	ErrMembershipNotFound      = errors.New("membership not found")
+	ErrMembershipAlreadyExists = errors.New("membership already exists")
+
 	// Common
 	ErrInternalServer = errors.New("internal server error")
 )

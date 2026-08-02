@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	authHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/auth/handler"
+	membershipHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/membership/handler"
 	organizationHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/organization/handler"
 	userHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/handler"
 
@@ -17,6 +18,7 @@ func New(
 	userHandler *userHandler.UserHandler,
 	authHandler *authHandler.AuthHandler,
 	orgHandler *organizationHandler.OrganizationHandler,
+	membershipHandler *membershipHandler.MembershipHandler,
 ) *gin.Engine {
 
 	router := gin.New()
@@ -60,6 +62,13 @@ func New(
 		protected.GET("/organizations/:id", orgHandler.GetByID)
 		protected.PUT("/organizations/:id", orgHandler.Update)
 		protected.DELETE("/organizations/:id", orgHandler.Delete)
+
+		// Membership
+		protected.POST("/memberships", membershipHandler.Create)
+		protected.GET("/memberships", membershipHandler.GetAll)
+		protected.GET("/memberships/:id", membershipHandler.GetByID)
+		protected.PUT("/memberships/:id", membershipHandler.Update)
+		protected.DELETE("/memberships/:id", membershipHandler.Delete)
 	}
 
 	return router
