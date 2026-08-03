@@ -7,7 +7,7 @@ This directory contains documentation for all REST APIs exposed by AIHub Backend
 # Base URL
 
 ```
-http://localhost:8080
+http://localhost:8080/api/v1
 ```
 
 ---
@@ -17,10 +17,28 @@ http://localhost:8080
 | Module | Endpoint |
 |---------|----------|
 | Health | GET /health |
-| Users | POST /users |
-| Users | GET /users/:id |
-| Users | PUT /users/:id |
-| Users | DELETE /users/:id |
+
+| Auth | POST /api/v1/auth/register |
+| Auth | POST /api/v1/auth/login |
+| Auth | GET /api/v1/auth/me |
+| Auth | POST /api/v1/auth/logout |
+
+| Users | POST /api/v1/users |
+| Users | GET /api/v1/users/:id |
+| Users | PUT /api/v1/users/:id |
+| Users | DELETE /api/v1/users/:id |
+
+| Organizations | POST /api/v1/organizations |
+| Organizations | GET /api/v1/organizations |
+| Organizations | GET /api/v1/organizations/:id |
+| Organizations | PUT /api/v1/organizations/:id |
+| Organizations | DELETE /api/v1/organizations/:id |
+
+| Memberships | POST /api/v1/memberships |
+| Memberships | GET /api/v1/memberships |
+| Memberships | GET /api/v1/memberships/:id |
+| Memberships | PUT /api/v1/memberships/:id |
+| Memberships | DELETE /api/v1/memberships/:id |
 
 ---
 

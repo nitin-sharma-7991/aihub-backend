@@ -17,20 +17,27 @@ The project follows a Feature-First Architecture combined with layered architect
 
 ```
 Client
-   │
-   ▼
+    │
+    ▼
 Gin Router
-   │
-   ▼
+    │
+    ▼
+Middleware
+(JWT / Logger / Recovery)
+    │
+    ▼
 Handler
-   │
-   ▼
+    │
+    ▼
 Service
-   │
-   ▼
-Repository
-   │
-   ▼
+    │
+    ▼
+Repository Interface
+    │
+    ▼
+Repository Implementation
+    │
+    ▼
 PostgreSQL
 ```
 
