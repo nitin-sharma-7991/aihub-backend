@@ -57,7 +57,7 @@ func InternalServerError(ctx *gin.Context) {
 	JSON(ctx, http.StatusInternalServerError, false, "Internal server error", nil, nil)
 }
 
-func Forbidden(
+func Unauthorized(
 	ctx *gin.Context,
 	message string,
 ) {

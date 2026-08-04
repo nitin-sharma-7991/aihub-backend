@@ -9,6 +9,7 @@ import (
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/auth/service"
 
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/apperrors"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/middleware"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/response"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/validation"
 )
@@ -23,6 +24,7 @@ func NewAuthHandler(authService service.AuthService) *AuthHandler {
 	}
 }
 
+// Login authenticates a user and returns a JWT access token.
 func (h *AuthHandler) Login(ctx *gin.Context) {
 
 	var req dto.LoginRequest
@@ -46,7 +48,7 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 	if err != nil {
 
 		if errors.Is(err, apperrors.ErrInvalidCredentials) {
-			response.Forbidden(ctx, err.Error())
+			response.Unauthorized(ctx, err.Error())
 			return
 		}
 
@@ -65,20 +67,12 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 	// TODO
 }
 
+// Me returns the authenticated user's profile.
 func (h *AuthHandler) Me(ctx *gin.Context) {
 
-	userIDValue, exists := ctx.Get("userID")
-	if !exists {
-		response.Forbidden(
-			ctx,
-			apperrors.ErrUnauthorized.Error(),
-		)
-		return
-	}
-
-	userID, ok := userIDValue.(uint)
+	userID, ok := middleware.GetUserID(ctx)
 	if !ok {
-		response.Forbidden(
+		response.Unauthorized(
 			ctx,
 			apperrors.ErrUnauthorized.Error(),
 		)
@@ -109,7 +103,12 @@ func (h *AuthHandler) Me(ctx *gin.Context) {
 }
 
 func (h *AuthHandler) Logout(ctx *gin.Context) {
-	// TODO
+
+	response.Success(
+		ctx,
+		"Logout successful",
+		nil,
+	)
 }
 
 func (h *AuthHandler) RefreshToken(ctx *gin.Context) {

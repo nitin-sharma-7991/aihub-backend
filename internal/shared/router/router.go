@@ -32,43 +32,57 @@ func New(
 	// API v1
 	v1 := router.Group("/api/v1")
 
-	// ---------------- Public Routes ----------------
+	// ----------------------------------------------------------------
+	// Public Routes
+	// ----------------------------------------------------------------
 
-	// Auth
-	v1.POST("/auth/login", authHandler.Login)
-	v1.POST("/auth/register", authHandler.Register)
+	auth := v1.Group("/auth")
+	{
+		auth.POST("/login", authHandler.Login)
+		auth.POST("/register", authHandler.Register)
+	}
 
-	// ---------------- Protected Routes ----------------
+	// ----------------------------------------------------------------
+	// Protected Routes
+	// ----------------------------------------------------------------
 
 	protected := v1.Group("")
-	protected.Use(
-		middleware.Auth(cfg.JWT.Secret),
-	)
+	protected.Use(middleware.Auth(cfg.JWT.Secret))
 
+	// Auth
+	protectedAuth := protected.Group("/auth")
 	{
-		// Auth
-		protected.GET("/auth/me", authHandler.Me)
-		protected.POST("/auth/logout", authHandler.Logout)
+		protectedAuth.GET("/me", authHandler.Me)
+		protectedAuth.POST("/logout", authHandler.Logout)
+	}
 
-		// Users
-		protected.POST("/users", userHandler.Create)
-		protected.GET("/users/:id", userHandler.GetByID)
-		protected.PUT("/users/:id", userHandler.Update)
-		protected.DELETE("/users/:id", userHandler.Delete)
+	// Users
+	users := protected.Group("/users")
+	{
+		users.POST("", userHandler.Create)
+		users.GET("/:id", userHandler.GetByID)
+		users.PUT("/:id", userHandler.Update)
+		users.DELETE("/:id", userHandler.Delete)
+	}
 
-		// Organization
-		protected.POST("/organizations", orgHandler.Create)
-		protected.GET("/organizations", orgHandler.GetAll)
-		protected.GET("/organizations/:id", orgHandler.GetByID)
-		protected.PUT("/organizations/:id", orgHandler.Update)
-		protected.DELETE("/organizations/:id", orgHandler.Delete)
+	// Organizations
+	organizations := protected.Group("/organizations")
+	{
+		organizations.POST("", orgHandler.Create)
+		organizations.GET("", orgHandler.GetAll)
+		organizations.GET("/:id", orgHandler.GetByID)
+		organizations.PUT("/:id", orgHandler.Update)
+		organizations.DELETE("/:id", orgHandler.Delete)
+	}
 
-		// Membership
-		protected.POST("/memberships", membershipHandler.Create)
-		protected.GET("/memberships", membershipHandler.GetAll)
-		protected.GET("/memberships/:id", membershipHandler.GetByID)
-		protected.PUT("/memberships/:id", membershipHandler.Update)
-		protected.DELETE("/memberships/:id", membershipHandler.Delete)
+	// Memberships
+	memberships := protected.Group("/memberships")
+	{
+		memberships.POST("", membershipHandler.Create)
+		memberships.GET("", membershipHandler.GetAll)
+		memberships.GET("/:id", membershipHandler.GetByID)
+		memberships.PUT("/:id", membershipHandler.Update)
+		memberships.DELETE("/:id", membershipHandler.Delete)
 	}
 
 	return router

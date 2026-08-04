@@ -10,7 +10,10 @@ import (
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/security"
 )
 
-// Auth validates JWT access tokens.
+// Auth authenticates incoming requests by validating the JWT
+// access token and storing authenticated user information
+// in the Gin context for downstream handlers.
+
 func Auth(secret string) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -18,7 +21,7 @@ func Auth(secret string) gin.HandlerFunc {
 		authHeader := ctx.GetHeader("Authorization")
 
 		if authHeader == "" {
-			response.Forbidden(
+			response.Unauthorized(
 				ctx,
 				apperrors.ErrMissingToken.Error(),
 			)
@@ -29,7 +32,7 @@ func Auth(secret string) gin.HandlerFunc {
 		parts := strings.SplitN(authHeader, " ", 2)
 
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			response.Forbidden(
+			response.Unauthorized(
 				ctx,
 				apperrors.ErrInvalidToken.Error(),
 			)
@@ -45,7 +48,7 @@ func Auth(secret string) gin.HandlerFunc {
 		)
 
 		if err != nil {
-			response.Forbidden(
+			response.Unauthorized(
 				ctx,
 				apperrors.ErrInvalidToken.Error(),
 			)
@@ -54,8 +57,8 @@ func Auth(secret string) gin.HandlerFunc {
 		}
 
 		// Store authenticated user information.
-		ctx.Set("userID", claims.UserID)
-		ctx.Set("role", claims.Role)
+		SetUserID(ctx, claims.UserID)
+		SetRole(ctx, claims.Role)
 
 		ctx.Next()
 	}
