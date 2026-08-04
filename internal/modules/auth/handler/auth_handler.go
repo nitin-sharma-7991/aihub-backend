@@ -29,14 +29,7 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 
 	var req dto.LoginRequest
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-
-		response.BadRequest(
-			ctx,
-			"Validation failed",
-			validation.FormatErrors(err),
-		)
-
+	if err := validation.BindJSON(ctx, &req); err != nil {
 		return
 	}
 

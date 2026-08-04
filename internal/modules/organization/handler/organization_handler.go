@@ -27,14 +27,7 @@ func (h *OrganizationHandler) Create(ctx *gin.Context) {
 
 	var req dto.CreateOrganizationRequest
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-
-		response.BadRequest(
-			ctx,
-			"Validation failed",
-			validation.FormatErrors(err),
-		)
-
+	if err := validation.BindJSON(ctx, &req); err != nil {
 		return
 	}
 
@@ -103,14 +96,7 @@ func (h *OrganizationHandler) Update(ctx *gin.Context) {
 
 	var req dto.UpdateOrganizationRequest
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-
-		response.BadRequest(
-			ctx,
-			"Validation failed",
-			validation.FormatErrors(err),
-		)
-
+	if err := validation.BindJSON(ctx, &req); err != nil {
 		return
 	}
 

@@ -6,6 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// FormatErrors converts validator errors into a consistent API response.
 func FormatErrors(err error) map[string][]string {
 
 	errors := make(map[string][]string)
@@ -23,19 +24,28 @@ func FormatErrors(err error) map[string][]string {
 		switch fieldError.Tag() {
 
 		case "required":
-			errors[field] = append(errors[field], fieldError.Field()+" is required")
+			errors[field] = append(errors[field],
+				field+" is required")
 
 		case "email":
-			errors[field] = append(errors[field], "Invalid email address")
+			errors[field] = append(errors[field],
+				"invalid email address")
 
 		case "min":
-			errors[field] = append(errors[field], fieldError.Field()+" must be at least "+fieldError.Param()+" characters")
+			errors[field] = append(errors[field],
+				field+" must be at least "+fieldError.Param()+" characters")
 
 		case "max":
-			errors[field] = append(errors[field], fieldError.Field()+" must be at most "+fieldError.Param()+" characters")
+			errors[field] = append(errors[field],
+				field+" must be at most "+fieldError.Param()+" characters")
+
+		case "oneof":
+			errors[field] = append(errors[field],
+				field+" must be one of: "+fieldError.Param())
 
 		default:
-			errors[field] = append(errors[field], fieldError.Error())
+			errors[field] = append(errors[field],
+				fieldError.Error())
 		}
 	}
 

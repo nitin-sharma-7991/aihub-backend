@@ -32,13 +32,7 @@ func (h *MembershipHandler) Create(ctx *gin.Context) {
 
 	var req dto.CreateMembershipRequest
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-
-		response.BadRequest(
-			ctx,
-			"Validation failed",
-			validation.FormatErrors(err),
-		)
+	if err := validation.BindJSON(ctx, &req); err != nil {
 		return
 	}
 
@@ -145,14 +139,7 @@ func (h *MembershipHandler) Update(ctx *gin.Context) {
 
 	var req dto.UpdateMembershipRequest
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-
-		response.BadRequest(
-			ctx,
-			"Validation failed",
-			validation.FormatErrors(err),
-		)
-
+	if err := validation.BindJSON(ctx, &req); err != nil {
 		return
 	}
 

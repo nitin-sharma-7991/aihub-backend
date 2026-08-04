@@ -28,14 +28,7 @@ func (h *UserHandler) Create(ctx *gin.Context) {
 
 	var req dto.CreateUserRequest
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-
-		response.BadRequest(
-			ctx,
-			"Validation failed",
-			validation.FormatErrors(err),
-		)
-
+	if err := validation.BindJSON(ctx, &req); err != nil {
 		return
 	}
 
@@ -89,14 +82,7 @@ func (h *UserHandler) Update(ctx *gin.Context) {
 
 	var req dto.UpdateUserRequest
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-
-		response.BadRequest(
-			ctx,
-			"Validation failed",
-			validation.FormatErrors(err),
-		)
-
+	if err := validation.BindJSON(ctx, &req); err != nil {
 		return
 	}
 
