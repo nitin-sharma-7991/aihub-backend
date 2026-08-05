@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 
 	authHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/auth/handler"
 	membershipHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/membership/handler"
@@ -15,6 +16,8 @@ import (
 // New creates and configures the application's router.
 func New(
 	cfg *config.Config,
+	log *zap.Logger,
+
 	userHandler *userHandler.UserHandler,
 	authHandler *authHandler.AuthHandler,
 	orgHandler *organizationHandler.OrganizationHandler,
@@ -27,6 +30,7 @@ func New(
 		gin.Logger(),
 		gin.Recovery(),
 		middleware.RequestID(),
+		middleware.Recovery(log),
 	)
 	// Health Check
 	router.GET("/health", Health)

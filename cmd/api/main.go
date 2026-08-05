@@ -74,6 +74,8 @@ func main() {
 	// Initialize router
 	r := router.New(
 		cfg,
+		logg,
+
 		userModule.Handler,
 		authModule.Handler,
 		orgModule.Handler,
