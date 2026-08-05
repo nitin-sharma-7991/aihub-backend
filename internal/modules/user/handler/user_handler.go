@@ -9,6 +9,7 @@ import (
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/dto"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/service"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/apperrors"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/pagination"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/response"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/validation"
 )
@@ -45,6 +46,30 @@ func (h *UserHandler) Create(ctx *gin.Context) {
 	}
 
 	response.Created(ctx, "User created successfully", user)
+}
+
+func (h *UserHandler) GetAll(ctx *gin.Context) {
+
+	var req pagination.Request
+
+	ctx.ShouldBindQuery(&req)
+
+	users, meta, err := h.userService.FindAll(
+		ctx.Request.Context(),
+		req,
+	)
+
+	if err != nil {
+		response.InternalServerError(ctx)
+		return
+	}
+
+	response.SuccessWithMeta(
+		ctx,
+		"Users fetched successfully",
+		users,
+		meta,
+	)
 }
 
 // GET /users/:id

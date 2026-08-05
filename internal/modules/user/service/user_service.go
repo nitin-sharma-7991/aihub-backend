@@ -8,12 +8,18 @@ import (
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/model"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/repository"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/apperrors"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/pagination"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/security"
 	"gorm.io/gorm"
 )
 
 type UserService interface {
 	Create(ctx context.Context, req dto.CreateUserRequest) (*dto.UserResponse, error)
+
+	FindAll(
+		ctx context.Context,
+		req pagination.Request,
+	) ([]dto.UserResponse, pagination.Meta, error)
 
 	GetByID(ctx context.Context, id uint) (*dto.UserResponse, error)
 
@@ -65,6 +71,37 @@ func (s *userService) Create(
 	}
 
 	return toUserResponse(user), nil
+}
+
+func (s *userService) FindAll(
+	ctx context.Context,
+	req pagination.Request,
+) ([]dto.UserResponse, pagination.Meta, error) {
+
+	req.Normalize()
+
+	users, total, err := s.userRepo.FindAll(
+		ctx,
+		req,
+	)
+	if err != nil {
+		return nil, pagination.Meta{}, err
+	}
+
+	response := make([]dto.UserResponse, 0, len(users))
+
+	for _, user := range users {
+
+		response = append(response, dto.UserResponse{
+			ID:    user.ID,
+			Name:  user.Name,
+			Email: user.Email,
+		})
+	}
+
+	meta := pagination.NewMeta(req, total)
+
+	return response, meta, nil
 }
 
 func (s *userService) GetByID(

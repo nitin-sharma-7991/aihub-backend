@@ -8,12 +8,16 @@ import (
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/organization/model"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/organization/repository"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/apperrors"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/pagination"
 	"gorm.io/gorm"
 )
 
 type OrganizationService interface {
 	Create(ctx context.Context, req dto.CreateOrganizationRequest) (*dto.OrganizationResponse, error)
-	FindAll(ctx context.Context) ([]dto.OrganizationResponse, error)
+	FindAll(
+		ctx context.Context,
+		req pagination.Request,
+	) ([]dto.OrganizationResponse, pagination.Meta, error)
 	FindByID(ctx context.Context, id uint) (*dto.OrganizationResponse, error)
 	Update(ctx context.Context, id uint, req dto.UpdateOrganizationRequest) (*dto.OrganizationResponse, error)
 	Delete(ctx context.Context, id uint) error
@@ -60,11 +64,17 @@ func (s *organizationService) Create(
 
 func (s *organizationService) FindAll(
 	ctx context.Context,
-) ([]dto.OrganizationResponse, error) {
+	req pagination.Request,
+) ([]dto.OrganizationResponse, pagination.Meta, error) {
 
-	orgs, err := s.orgRepo.FindAll(ctx)
+	req.Normalize()
+
+	orgs, total, err := s.orgRepo.FindAll(
+		ctx,
+		req,
+	)
 	if err != nil {
-		return nil, err
+		return nil, pagination.Meta{}, err
 	}
 
 	response := make([]dto.OrganizationResponse, 0, len(orgs))
@@ -78,7 +88,9 @@ func (s *organizationService) FindAll(
 		})
 	}
 
-	return response, nil
+	meta := pagination.NewMeta(req, total)
+
+	return response, meta, nil
 }
 
 func (s *organizationService) FindByID(

@@ -4,11 +4,17 @@ import (
 	"context"
 
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/model"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/pagination"
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
 	Create(ctx context.Context, user *model.User) error
+
+	FindAll(
+		ctx context.Context,
+		req pagination.Request,
+	) ([]model.User, int64, error)
 
 	FindByID(ctx context.Context, id uint) (*model.User, error)
 
@@ -39,6 +45,34 @@ func (r *userRepository) Create(
 		WithContext(ctx).
 		Create(user).
 		Error
+}
+
+// Find All Users
+func (r *userRepository) FindAll(
+	ctx context.Context,
+	req pagination.Request,
+) ([]model.User, int64, error) {
+
+	var (
+		users []model.User
+		total int64
+	)
+
+	db := r.db.WithContext(ctx)
+
+	if err := db.Model(&model.User{}).
+		Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := db.
+		Limit(req.Limit).
+		Offset(req.Offset()).
+		Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return users, total, nil
 }
 
 // Find User By ID

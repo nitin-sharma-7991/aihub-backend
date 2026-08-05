@@ -10,6 +10,7 @@ import (
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/membership/repository"
 
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/apperrors"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/pagination"
 
 	"gorm.io/gorm"
 )
@@ -22,7 +23,8 @@ type MembershipService interface {
 
 	FindAll(
 		ctx context.Context,
-	) ([]dto.MembershipResponse, error)
+		req pagination.Request,
+	) ([]dto.MembershipResponse, pagination.Meta, error)
 
 	FindByID(
 		ctx context.Context,
@@ -89,30 +91,33 @@ func (s *membershipService) Create(
 
 func (s *membershipService) FindAll(
 	ctx context.Context,
-) ([]dto.MembershipResponse, error) {
+	req pagination.Request,
+) ([]dto.MembershipResponse, pagination.Meta, error) {
 
-	memberships, err := s.membershipRepo.FindAll(ctx)
+	req.Normalize()
+
+	memberships, total, err := s.membershipRepo.FindAll(
+		ctx,
+		req,
+	)
 	if err != nil {
-		return nil, err
+		return nil, pagination.Meta{}, err
 	}
 
 	response := make([]dto.MembershipResponse, 0, len(memberships))
 
 	for _, membership := range memberships {
-
-		response = append(
-			response,
-			dto.MembershipResponse{
-				ID:             membership.ID,
-				OrganizationID: membership.OrganizationID,
-				UserID:         membership.UserID,
-				Role:           membership.Role,
-				InvitedBy:      membership.InvitedBy,
-			},
-		)
+		response = append(response, dto.MembershipResponse{
+			ID:             membership.ID,
+			UserID:         membership.UserID,
+			OrganizationID: membership.OrganizationID,
+			Role:           membership.Role,
+		})
 	}
 
-	return response, nil
+	meta := pagination.NewMeta(req, total)
+
+	return response, meta, nil
 }
 
 func (s *membershipService) FindByID(

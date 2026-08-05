@@ -4,13 +4,17 @@ import (
 	"context"
 
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/membership/model"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/pagination"
 	"gorm.io/gorm"
 )
 
 type MembershipRepository interface {
 	Create(ctx context.Context, membership *model.Membership) error
 
-	FindAll(ctx context.Context) ([]model.Membership, error)
+	FindAll(
+		ctx context.Context,
+		req pagination.Request,
+	) ([]model.Membership, int64, error)
 
 	FindByID(ctx context.Context, id uint) (*model.Membership, error)
 
@@ -50,20 +54,29 @@ func (r *membershipRepository) Create(
 // Find All Memberships
 func (r *membershipRepository) FindAll(
 	ctx context.Context,
-) ([]model.Membership, error) {
+	req pagination.Request,
+) ([]model.Membership, int64, error) {
 
-	var memberships []model.Membership
+	var (
+		memberships []model.Membership
+		total       int64
+	)
 
-	err := r.db.
-		WithContext(ctx).
-		Find(&memberships).
-		Error
+	db := r.db.WithContext(ctx)
 
-	if err != nil {
-		return nil, err
+	if err := db.Model(&model.Membership{}).
+		Count(&total).Error; err != nil {
+		return nil, 0, err
 	}
 
-	return memberships, nil
+	if err := db.
+		Limit(req.Limit).
+		Offset(req.Offset()).
+		Find(&memberships).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return memberships, total, nil
 }
 
 // Find Membership By ID

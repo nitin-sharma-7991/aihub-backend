@@ -4,13 +4,17 @@ import (
 	"context"
 
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/organization/model"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/pagination"
 	"gorm.io/gorm"
 )
 
 type OrganizationRepository interface {
 	Create(ctx context.Context, org *model.Organization) error
 
-	FindAll(ctx context.Context) ([]model.Organization, error)
+	FindAll(
+		ctx context.Context,
+		req pagination.Request,
+	) ([]model.Organization, int64, error)
 
 	FindByID(ctx context.Context, id uint) (*model.Organization, error)
 
@@ -44,22 +48,32 @@ func (r *organizationRepository) Create(
 }
 
 // Find All Organization
+// Find All Organizations
 func (r *organizationRepository) FindAll(
 	ctx context.Context,
-) ([]model.Organization, error) {
+	req pagination.Request,
+) ([]model.Organization, int64, error) {
 
-	var organizations []model.Organization
+	var (
+		organizations []model.Organization
+		total         int64
+	)
 
-	err := r.db.
-		WithContext(ctx).
-		Find(&organizations).
-		Error
+	db := r.db.WithContext(ctx)
 
-	if err != nil {
-		return nil, err
+	if err := db.Model(&model.Organization{}).
+		Count(&total).Error; err != nil {
+		return nil, 0, err
 	}
 
-	return organizations, nil
+	if err := db.
+		Limit(req.Limit).
+		Offset(req.Offset()).
+		Find(&organizations).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return organizations, total, nil
 }
 
 // Find Organization By ID

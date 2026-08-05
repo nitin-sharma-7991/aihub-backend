@@ -8,6 +8,7 @@ import (
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/organization/dto"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/organization/service"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/apperrors"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/pagination"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/response"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/validation"
 )
@@ -48,16 +49,25 @@ func (h *OrganizationHandler) Create(ctx *gin.Context) {
 
 func (h *OrganizationHandler) GetAll(ctx *gin.Context) {
 
-	orgs, err := h.service.FindAll(ctx.Request.Context())
+	var req pagination.Request
+
+	ctx.ShouldBindQuery(&req)
+
+	orgs, meta, err := h.service.FindAll(
+		ctx.Request.Context(),
+		req,
+	)
+
 	if err != nil {
 		response.InternalServerError(ctx)
 		return
 	}
 
-	response.Success(
+	response.SuccessWithMeta(
 		ctx,
 		"Organizations fetched successfully",
 		orgs,
+		meta,
 	)
 }
 

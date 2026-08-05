@@ -10,6 +10,7 @@ import (
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/membership/service"
 
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/apperrors"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/pagination"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/response"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/validation"
 )
@@ -62,8 +63,13 @@ func (h *MembershipHandler) Create(ctx *gin.Context) {
 // GET /memberships
 func (h *MembershipHandler) GetAll(ctx *gin.Context) {
 
-	memberships, err := h.membershipService.FindAll(
+	var req pagination.Request
+
+	ctx.ShouldBindQuery(&req)
+
+	memberships, meta, err := h.membershipService.FindAll(
 		ctx.Request.Context(),
+		req,
 	)
 
 	if err != nil {
@@ -71,10 +77,11 @@ func (h *MembershipHandler) GetAll(ctx *gin.Context) {
 		return
 	}
 
-	response.Success(
+	response.SuccessWithMeta(
 		ctx,
 		"Memberships fetched successfully",
 		memberships,
+		meta,
 	)
 }
 
