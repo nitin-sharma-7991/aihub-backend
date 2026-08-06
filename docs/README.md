@@ -1,18 +1,20 @@
-# AIHub Documentation
+# AIHub Backend Documentation
 
-**Current Version:** v0.2.0
+**Version:** v0.3.0
 
 **Status:** 🚧 Active Development
 
 ---
 
-## Overview
+# Overview
 
-This directory contains all technical documentation related to the AIHub Backend project.
+Welcome to the AIHub Backend documentation.
 
-The purpose of this documentation is to explain not only **what** has been implemented, but also **why** specific architectural decisions were made.
+This directory contains all technical documentation related to the architecture, APIs, development practices, setup guides, and architectural decisions used throughout the project.
 
-The documentation is organized similarly to production-grade backend software projects.
+The objective of this documentation is not only to explain **what** has been built, but also **why** specific architectural decisions were made and **how** each component works together.
+
+The documentation is designed to follow production-grade backend engineering standards.
 
 ---
 
@@ -21,51 +23,81 @@ The documentation is organized similarly to production-grade backend software pr
 ```text
 docs/
 
+├── README.md
+│
+├── architecture/
+│   ├── README.md
+│   ├── folder-structure.md
+│   ├── request-flow.md
+│   ├── dependency-flow.md
+│   └── middleware.md
+│
 ├── api/
 │   ├── auth/
 │   ├── users/
 │   ├── organizations/
 │   └── memberships/
 │
-├── architecture/
 ├── decisions/
+│
 ├── diagrams/
-├── setup/
-└── README.md
+│
+└── setup/
 ```
 
 ---
 
 # Documentation Sections
 
+## architecture/
+
+Contains the overall software architecture of AIHub.
+
+Topics include:
+
+- Feature-first architecture
+- Folder structure
+- Request lifecycle
+- Dependency flow
+- Middleware pipeline
+- Design principles
+
+---
+
 ## api/
 
-Contains documentation for every REST API exposed by AIHub.
+Contains documentation for every REST API.
 
 Each endpoint includes:
 
 - Request
 - Response
-- Validation Rules
+- Validation
 - Authentication
-- Business Rules
 - Status Codes
 - Error Responses
 
 ---
 
-## architecture/
+## setup/
 
-Explains the overall software architecture.
+Contains development environment setup guides.
 
-Topics include:
+Examples:
 
-- Feature-first Architecture
-- Folder Structure
-- Dependency Injection
-- Repository Pattern
-- Request Lifecycle
-- Database Design
+- PostgreSQL Setup
+- Environment Variables
+- Running the Server
+- Database Migration
+- Local Development
+
+---
+
+## diagrams/
+
+Contains architecture diagrams and request flow diagrams.
+
+Diagrams are primarily written using Mermaid for GitHub rendering.
 
 ---
 
@@ -73,7 +105,7 @@ Topics include:
 
 Architecture Decision Records (ADR).
 
-Each ADR explains:
+Every important architectural decision should include:
 
 - Context
 - Problem
@@ -81,42 +113,82 @@ Each ADR explains:
 - Decision
 - Consequences
 
-This allows future developers to understand why a particular architectural decision was chosen.
+---
+
+# Documentation Philosophy
+
+Documentation should evolve together with the source code.
+
+Whenever a new feature is implemented, the corresponding documentation should also be updated.
+
+This ensures:
+
+- Better maintainability
+- Easier onboarding
+- Clear architecture understanding
+- Long-term project scalability
 
 ---
 
-## diagrams/
+# Current Implementation
 
-Contains visual diagrams for the project.
+The current version of AIHub includes:
 
-Examples include:
-
-- Request Lifecycle
-- Module Dependency
-- Folder Structure
-- Database Flow
-
-Most diagrams are written using Mermaid so they can be rendered directly on GitHub.
+- Gin Web Framework
+- PostgreSQL
+- GORM ORM
+- JWT Authentication
+- User Module
+- Authentication Module
+- Organization Module
+- Membership Module
+- Repository Pattern
+- Dependency Injection
+- Feature-first Architecture
+- Standardized API Responses
+- Request Validation
+- Centralized Error Handling
+- Pagination Infrastructure
+- Request ID Middleware
+- Recovery Middleware
+- Logger Middleware
 
 ---
 
-## setup/
+# Project Goals
 
-Contains project setup guides.
+AIHub aims to demonstrate a production-ready backend architecture using Go.
 
-Examples include:
+Key goals include:
 
-- Local Development
-- PostgreSQL Installation
-- Environment Variables
-- Running the Server
-- Database Migration
+- Clean and maintainable architecture
+- Modular feature-first organization
+- Dependency Injection
+- Repository Pattern
+- JWT Authentication
+- Production-grade middleware
+- Standardized API responses
+- Validation layer
+- Scalable REST APIs
+- Enterprise-ready project structure
+
+---
+
+# Target Audience
+
+This documentation is intended for:
+
+- Backend Developers
+- Contributors
+- Recruiters
+- Interviewers
+- Future Maintainers
 
 ---
 
 # Documentation Standards
 
-Every document should answer three questions.
+Every document should answer three questions:
 
 ## What
 
@@ -126,7 +198,7 @@ What is this component?
 
 ## Why
 
-Why was this architecture or approach chosen?
+Why was this approach chosen?
 
 ---
 
@@ -136,147 +208,35 @@ How is it implemented inside AIHub?
 
 ---
 
-# Documentation Philosophy
-
-Documentation should evolve together with the source code.
-
-Whenever a new feature is introduced, the following documentation should also be updated:
-
-- API Documentation
-- Architecture
-- Diagrams
-- ADR (if applicable)
-
-Keeping documentation synchronized with implementation ensures long-term maintainability and easier onboarding for future contributors.
-
----
-
 # Roadmap
-
-As AIHub grows, the documentation will continue to expand.
 
 Upcoming documentation includes:
 
-- Dynamic RBAC
+- Role Based Access Control (RBAC)
 - Invitation System
 - Projects Module
 - AI Providers
 - API Keys
-- Usage Analytics
-- Billing
 - Audit Logs
 - Redis
 - Background Jobs
 - Rate Limiting
 - Docker
 - Swagger
-- Testing
+- Unit Testing
+- Integration Testing
 - CI/CD
-- Kubernetes
 - Monitoring
 - Deployment
+- Kubernetes
 
 ---
 
-# Project Architecture Overview
+# Contributing
 
-```text
-HTTP Request
-      │
-      ▼
-Gin Router
-      │
-      ▼
-Middleware
-      │
-      ▼
-Handler
-      │
-      ▼
-Service
-      │
-      ▼
-Repository
-      │
-      ▼
-PostgreSQL
-      │
-      ▼
-Repository
-      │
-      ▼
-Service
-      │
-      ▼
-Handler
-      │
-      ▼
-JSON Response
-```
+Documentation is considered a first-class part of this project.
 
----
-
-# Audience
-
-This documentation is intended for:
-
-- Developers
-- Contributors
-- Recruiters
-- Interviewers
-- Future Maintainers
-
----
-
-# Current Implementation
-
-The current documentation reflects the backend architecture implemented in AIHub.
-
-Current implementation includes:
-
-- Gin Web Framework
-- PostgreSQL
-- GORM ORM
-- JWT Authentication
-- User Module
-- Authentication Module
-- Organization Module
-- Membership Module (Foundation)
-- Repository Pattern
-- Dependency Injection
-- Feature-first Architecture
-- API Versioning (`/api/v1`)
-- Request Validation
-- Standardized JSON Response
-
-Future versions will evolve alongside the project.
-
----
-
-# Project Goals
-
-AIHub Backend aims to provide a production-ready backend architecture that demonstrates:
-
-- Clean Architecture Principles
-- Feature-first Module Organization
-- Dependency Injection
-- Repository Pattern
-- JWT Authentication
-- Scalable REST APIs
-- Standardized API Responses
-- Validation Layer
-- Production-grade Code Structure
-- Maintainable and Modular Design
-
----
-
-# Contributing to Documentation
-
-Documentation is considered a first-class part of the AIHub project.
-
-Whenever a feature is implemented, its documentation should be updated in the same pull request whenever possible.
-
-This helps ensure that both the codebase and documentation remain accurate, synchronized, and easy to understand.
+Whenever a feature is implemented, its documentation should be updated in the same commit or pull request whenever possible.
 
 ---
 
