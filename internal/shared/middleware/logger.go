@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/request"
 	"go.uber.org/zap"
 )
 
 func Logger(log *zap.Logger) gin.HandlerFunc {
-
 	return func(ctx *gin.Context) {
 
 		start := time.Now()
@@ -17,11 +17,11 @@ func Logger(log *zap.Logger) gin.HandlerFunc {
 
 		latency := time.Since(start)
 
-		requestID, _ := ctx.Get("request_id")
+		requestID := request.GetRequestID(ctx)
 
 		log.Info(
 			"HTTP Request",
-			zap.Any("request_id", requestID),
+			zap.String("request_id", requestID),
 			zap.String("method", ctx.Request.Method),
 			zap.String("path", ctx.Request.URL.Path),
 			zap.Int("status", ctx.Writer.Status()),

@@ -1,6 +1,8 @@
 package router
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
@@ -30,9 +32,25 @@ func New(
 		middleware.RequestID(),
 		middleware.Recovery(log),
 		middleware.Logger(log),
+		middleware.Timeout(10*time.Second),
 	)
 	// Health Check
 	router.GET("/health", Health)
+
+	router.GET("/test-timeout", func(c *gin.Context) {
+
+		select {
+		case <-time.After(15 * time.Second):
+			c.JSON(200, gin.H{
+				"message": "completed",
+			})
+
+		case <-c.Request.Context().Done():
+			c.JSON(504, gin.H{
+				"message": "request timeout",
+			})
+		}
+	})
 
 	// API v1
 	v1 := router.Group("/api/v1")
