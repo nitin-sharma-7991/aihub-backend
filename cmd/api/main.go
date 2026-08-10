@@ -13,6 +13,9 @@ import (
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/auth"
 	membership "github.com/nitin-sharma-7991/aihub-backend/internal/modules/membership"
 	organization "github.com/nitin-sharma-7991/aihub-backend/internal/modules/organization"
+	permissionModule "github.com/nitin-sharma-7991/aihub-backend/internal/modules/permission"
+	roleModule "github.com/nitin-sharma-7991/aihub-backend/internal/modules/role"
+	rolePermissionModule "github.com/nitin-sharma-7991/aihub-backend/internal/modules/role_permission"
 	user "github.com/nitin-sharma-7991/aihub-backend/internal/modules/user"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/server"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/config"
@@ -56,6 +59,15 @@ func main() {
 		logg.Fatal("Database migration failed", zap.Error(err))
 	}
 
+	// Initialize Role Module
+	roleModule := roleModule.New(db)
+
+	// Initialize Permission Module
+	permissionModule := permissionModule.New(db)
+
+	// Initialize Permission Module
+	rolePermissionModule := rolePermissionModule.New(db)
+
 	// Initialize User Module
 	userModule := user.New(db)
 
@@ -80,6 +92,9 @@ func main() {
 		authModule.Handler,
 		orgModule.Handler,
 		membershipModule.Handler,
+		roleModule.Handler,
+		permissionModule.Handler,
+		rolePermissionModule.Handler,
 	)
 
 	// Initialize server

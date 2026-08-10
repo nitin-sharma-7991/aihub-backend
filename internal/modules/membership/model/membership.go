@@ -4,6 +4,7 @@ import (
 	"time"
 
 	organizationModel "github.com/nitin-sharma-7991/aihub-backend/internal/modules/organization/model"
+	roleModel "github.com/nitin-sharma-7991/aihub-backend/internal/modules/role/model"
 	userModel "github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/model"
 )
 
@@ -19,7 +20,8 @@ type Membership struct {
 	UserID uint            `gorm:"not null;uniqueIndex:idx_org_user"`
 	User   *userModel.User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	Role string `gorm:"size:30;not null"`
+	RoleID uint            `gorm:"not null;index"`
+	Role   *roleModel.Role `gorm:"constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 
 	InvitedBy uint
 	Inviter   *userModel.User `gorm:"foreignKey:InvitedBy;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`

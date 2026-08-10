@@ -78,7 +78,7 @@ func (s *membershipService) Create(
 	membership := &model.Membership{
 		OrganizationID: req.OrganizationID,
 		UserID:         req.UserID,
-		Role:           req.Role,
+		RoleID:         req.RoleID,
 		JoinedAt:       time.Now(),
 	}
 
@@ -111,7 +111,7 @@ func (s *membershipService) FindAll(
 			ID:             membership.ID,
 			UserID:         membership.UserID,
 			OrganizationID: membership.OrganizationID,
-			Role:           membership.Role,
+			RoleID:         membership.RoleID,
 		})
 	}
 
@@ -154,7 +154,7 @@ func (s *membershipService) Update(
 		return nil, err
 	}
 
-	membership.Role = req.Role
+	membership.RoleID = req.RoleID
 
 	if err := s.membershipRepo.Update(ctx, membership); err != nil {
 		return nil, err
@@ -189,7 +189,7 @@ func toMembershipResponse(
 		ID:             membership.ID,
 		OrganizationID: membership.OrganizationID,
 		UserID:         membership.UserID,
-		Role:           membership.Role,
+		RoleID:         membership.RoleID,
 		InvitedBy:      membership.InvitedBy,
 	}
 }

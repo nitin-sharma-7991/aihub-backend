@@ -70,6 +70,7 @@ func (r *membershipRepository) FindAll(
 	}
 
 	if err := db.
+		Preload("Role").
 		Limit(req.Limit).
 		Offset(req.Offset()).
 		Find(&memberships).Error; err != nil {
@@ -89,6 +90,7 @@ func (r *membershipRepository) FindByID(
 
 	err := r.db.
 		WithContext(ctx).
+		Preload("Role").
 		First(&membership, id).
 		Error
 
@@ -110,6 +112,7 @@ func (r *membershipRepository) FindByUserAndOrganization(
 
 	err := r.db.
 		WithContext(ctx).
+		Preload("Role").
 		Where(
 			"user_id = ? AND organization_id = ?",
 			userID,

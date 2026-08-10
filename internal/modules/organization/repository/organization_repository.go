@@ -67,6 +67,7 @@ func (r *organizationRepository) FindAll(
 	}
 
 	if err := db.
+		Preload("Role").
 		Limit(req.Limit).
 		Offset(req.Offset()).
 		Find(&organizations).Error; err != nil {

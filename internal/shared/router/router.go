@@ -9,6 +9,9 @@ import (
 	authHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/auth/handler"
 	membershipHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/membership/handler"
 	organizationHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/organization/handler"
+	permissionHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/permission/handler"
+	roleHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/role/handler"
+	rolePermissionHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/role_permission/handler"
 	userHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/handler"
 
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/config"
@@ -24,6 +27,9 @@ func New(
 	authHandler *authHandler.AuthHandler,
 	orgHandler *organizationHandler.OrganizationHandler,
 	membershipHandler *membershipHandler.MembershipHandler,
+	roleHandler *roleHandler.RoleHandler,
+	permissionHandler *permissionHandler.PermissionHandler,
+	rolePermissionHandler *rolePermissionHandler.RolePermissionHandler,
 ) *gin.Engine {
 
 	router := gin.New()
@@ -108,6 +114,39 @@ func New(
 		memberships.PUT("/:id", membershipHandler.Update)
 		memberships.DELETE("/:id", membershipHandler.Delete)
 	}
+
+	// Roles
+	roles := protected.Group("/roles")
+	{
+		roles.POST("", roleHandler.Create)
+		roles.GET("", roleHandler.GetAll)
+		roles.GET("/:id", roleHandler.GetByID)
+		roles.PUT("/:id", roleHandler.Update)
+		roles.DELETE("/:id", roleHandler.Delete)
+	}
+
+	// Permissions
+	permissions := protected.Group("/permissions")
+	{
+		permissions.POST("", permissionHandler.Create)
+		permissions.GET("", permissionHandler.GetAll)
+
+		// Static route BEFORE /:id
+		permissions.GET("/role/:role_id", permissionHandler.GetByRoleID)
+
+		permissions.GET("/:id", permissionHandler.GetByID)
+		permissions.PUT("/:id", permissionHandler.Update)
+		permissions.DELETE("/:id", permissionHandler.Delete)
+	}
+
+	// Role Permissions
+	rolePermissions := protected.Group("/roles/:role_id/permissions")
+	{
+		rolePermissions.POST("", rolePermissionHandler.AssignPermission)
+		rolePermissions.GET("", rolePermissionHandler.GetPermissions)
+	}
+
+	protected.DELETE("/roles/:role_id/permissions/:permission_id", rolePermissionHandler.RevokePermission)
 
 	return router
 }
