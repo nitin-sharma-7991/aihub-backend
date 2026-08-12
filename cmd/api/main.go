@@ -18,6 +18,7 @@ import (
 	rolePermissionModule "github.com/nitin-sharma-7991/aihub-backend/internal/modules/role_permission"
 	user "github.com/nitin-sharma-7991/aihub-backend/internal/modules/user"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/server"
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/authorization"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/config"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/database"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/logger"
@@ -83,6 +84,12 @@ func main() {
 	// Initialize Membership Module
 	membershipModule := membership.New(db)
 
+	// Initialize Authorization Service
+	authorizationService := authorization.NewService(
+		membershipModule.MembershipRepo,
+		permissionModule.PermissionRepo,
+	)
+
 	// Initialize router
 	r := router.New(
 		cfg,
@@ -95,6 +102,8 @@ func main() {
 		roleModule.Handler,
 		permissionModule.Handler,
 		rolePermissionModule.Handler,
+
+		authorizationService,
 	)
 
 	// Initialize server

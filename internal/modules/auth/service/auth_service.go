@@ -5,11 +5,14 @@ import (
 	"errors"
 
 	authDTO "github.com/nitin-sharma-7991/aihub-backend/internal/modules/auth/dto"
+	userModel "github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/model"
 	userRepository "github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/repository"
 
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/apperrors"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/config"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/security"
+
+	"gorm.io/gorm"
 )
 
 type AuthService interface {
@@ -17,6 +20,11 @@ type AuthService interface {
 		ctx context.Context,
 		req authDTO.LoginRequest,
 	) (*authDTO.LoginResponse, error)
+
+	Register(
+		ctx context.Context,
+		req authDTO.RegisterRequest,
+	) (*authDTO.RegisterResponse, error)
 
 	Me(
 		ctx context.Context,
@@ -33,13 +41,13 @@ func NewAuthService(
 	userRepo userRepository.UserRepository,
 	cfg *config.Config,
 ) AuthService {
-
 	return &authService{
 		userRepo: userRepo,
 		cfg:      cfg,
 	}
 }
 
+// Login
 func (s *authService) Login(
 	ctx context.Context,
 	req authDTO.LoginRequest,
@@ -47,8 +55,7 @@ func (s *authService) Login(
 
 	user, err := s.userRepo.FindByEmail(ctx, req.Email)
 	if err != nil {
-
-		if errors.Is(err, apperrors.ErrUserNotFound) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperrors.ErrInvalidCredentials
 		}
 
@@ -79,6 +86,48 @@ func (s *authService) Login(
 	}, nil
 }
 
+// Register
+func (s *authService) Register(
+	ctx context.Context,
+	req authDTO.RegisterRequest,
+) (*authDTO.RegisterResponse, error) {
+
+	existingUser, err := s.userRepo.FindByEmail(
+		ctx,
+		req.Email,
+	)
+
+	if err == nil && existingUser != nil {
+		return nil, apperrors.ErrEmailAlreadyExists
+	}
+
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	hashedPassword, err := security.HashPassword(req.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	user := &userModel.User{
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: hashedPassword,
+	}
+
+	if err := s.userRepo.Create(ctx, user); err != nil {
+		return nil, err
+	}
+
+	return &authDTO.RegisterResponse{
+		ID:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
+	}, nil
+}
+
+// Me
 func (s *authService) Me(
 	ctx context.Context,
 	userID uint,
@@ -86,9 +135,8 @@ func (s *authService) Me(
 
 	user, err := s.userRepo.FindByID(ctx, userID)
 	if err != nil {
-
-		if errors.Is(err, apperrors.ErrUserNotFound) {
-			return nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperrors.ErrUserNotFound
 		}
 
 		return nil, err

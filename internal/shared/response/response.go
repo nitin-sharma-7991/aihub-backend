@@ -63,6 +63,20 @@ func Unauthorized(
 ) {
 	JSON(
 		ctx,
+		http.StatusUnauthorized,
+		false,
+		message,
+		nil,
+		nil,
+	)
+}
+
+func Forbidden(
+	ctx *gin.Context,
+	message string,
+) {
+	JSON(
+		ctx,
 		http.StatusForbidden,
 		false,
 		message,

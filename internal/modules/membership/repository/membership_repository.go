@@ -5,18 +5,31 @@ import (
 
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/membership/model"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/pagination"
+
 	"gorm.io/gorm"
 )
 
 type MembershipRepository interface {
-	Create(ctx context.Context, membership *model.Membership) error
+	Create(
+		ctx context.Context,
+		membership *model.Membership,
+	) error
 
 	FindAll(
 		ctx context.Context,
 		req pagination.Request,
 	) ([]model.Membership, int64, error)
 
-	FindByID(ctx context.Context, id uint) (*model.Membership, error)
+	FindByID(
+		ctx context.Context,
+		id uint,
+	) (*model.Membership, error)
+
+	FindByIDAndOrganizationID(
+		ctx context.Context,
+		id uint,
+		organizationID uint,
+	) (*model.Membership, error)
 
 	FindByUserAndOrganization(
 		ctx context.Context,
@@ -24,16 +37,30 @@ type MembershipRepository interface {
 		organizationID uint,
 	) (*model.Membership, error)
 
-	Update(ctx context.Context, membership *model.Membership) error
+	FindAllByOrganizationID(
+		ctx context.Context,
+		organizationID uint,
+		req pagination.Request,
+	) ([]model.Membership, int64, error)
 
-	Delete(ctx context.Context, id uint) error
+	Update(
+		ctx context.Context,
+		membership *model.Membership,
+	) error
+
+	Delete(
+		ctx context.Context,
+		id uint,
+	) error
 }
 
 type membershipRepository struct {
 	db *gorm.DB
 }
 
-func NewMembershipRepository(db *gorm.DB) MembershipRepository {
+func NewMembershipRepository(
+	db *gorm.DB,
+) MembershipRepository {
 	return &membershipRepository{
 		db: db,
 	}
@@ -64,8 +91,10 @@ func (r *membershipRepository) FindAll(
 
 	db := r.db.WithContext(ctx)
 
-	if err := db.Model(&model.Membership{}).
-		Count(&total).Error; err != nil {
+	if err := db.
+		Model(&model.Membership{}).
+		Count(&total).
+		Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -73,7 +102,8 @@ func (r *membershipRepository) FindAll(
 		Preload("Role").
 		Limit(req.Limit).
 		Offset(req.Offset()).
-		Find(&memberships).Error; err != nil {
+		Find(&memberships).
+		Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -92,6 +122,33 @@ func (r *membershipRepository) FindByID(
 		WithContext(ctx).
 		Preload("Role").
 		First(&membership, id).
+		Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &membership, nil
+}
+
+// Find Membership By ID + Organization ID
+func (r *membershipRepository) FindByIDAndOrganizationID(
+	ctx context.Context,
+	id uint,
+	organizationID uint,
+) (*model.Membership, error) {
+
+	var membership model.Membership
+
+	err := r.db.
+		WithContext(ctx).
+		Preload("Role").
+		Where(
+			"id = ? AND organization_id = ?",
+			id,
+			organizationID,
+		).
+		First(&membership).
 		Error
 
 	if err != nil {
@@ -128,6 +185,44 @@ func (r *membershipRepository) FindByUserAndOrganization(
 	return &membership, nil
 }
 
+// Find All Memberships By Organization ID
+func (r *membershipRepository) FindAllByOrganizationID(
+	ctx context.Context,
+	organizationID uint,
+	req pagination.Request,
+) ([]model.Membership, int64, error) {
+
+	var (
+		memberships []model.Membership
+		total       int64
+	)
+
+	db := r.db.
+		WithContext(ctx).
+		Where(
+			"organization_id = ?",
+			organizationID,
+		)
+
+	if err := db.
+		Model(&model.Membership{}).
+		Count(&total).
+		Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := db.
+		Preload("Role").
+		Limit(req.Limit).
+		Offset(req.Offset()).
+		Find(&memberships).
+		Error; err != nil {
+		return nil, 0, err
+	}
+
+	return memberships, total, nil
+}
+
 // Update Membership
 func (r *membershipRepository) Update(
 	ctx context.Context,
@@ -148,6 +243,9 @@ func (r *membershipRepository) Delete(
 
 	return r.db.
 		WithContext(ctx).
-		Delete(&model.Membership{}, id).
+		Delete(
+			&model.Membership{},
+			id,
+		).
 		Error
 }

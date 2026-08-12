@@ -71,10 +71,10 @@ func (h *OrganizationHandler) GetAll(ctx *gin.Context) {
 	)
 }
 
-// GET /organizations/:id
+// GET /organizations/:organization_id
 func (h *OrganizationHandler) GetByID(ctx *gin.Context) {
 
-	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(ctx.Param("organization_id"), 10, 64)
 	if err != nil {
 		response.BadRequest(ctx, "Invalid organization id", nil)
 		return
@@ -95,12 +95,12 @@ func (h *OrganizationHandler) GetByID(ctx *gin.Context) {
 	response.Success(ctx, "Organization fetched successfully", org)
 }
 
-// PUT /organization/:id
+// PUT /organizations/:organization_id
 func (h *OrganizationHandler) Update(ctx *gin.Context) {
 
-	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(ctx.Param("organization_id"), 10, 64)
 	if err != nil {
-		response.BadRequest(ctx, "Invalid user id", nil)
+		response.BadRequest(ctx, "Invalid organization id", nil)
 		return
 	}
 
@@ -133,9 +133,9 @@ func (h *OrganizationHandler) Update(ctx *gin.Context) {
 // DELETE /organizations/:id
 func (h *OrganizationHandler) Delete(ctx *gin.Context) {
 
-	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(ctx.Param("organization_id"), 10, 64)
 	if err != nil {
-		response.BadRequest(ctx, "Invalid user id", nil)
+		response.BadRequest(ctx, "Invalid organization id", nil)
 		return
 	}
 

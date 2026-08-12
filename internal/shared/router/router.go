@@ -14,6 +14,7 @@ import (
 	rolePermissionHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/role_permission/handler"
 	userHandler "github.com/nitin-sharma-7991/aihub-backend/internal/modules/user/handler"
 
+	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/authorization"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/config"
 	"github.com/nitin-sharma-7991/aihub-backend/internal/shared/middleware"
 )
@@ -30,6 +31,8 @@ func New(
 	roleHandler *roleHandler.RoleHandler,
 	permissionHandler *permissionHandler.PermissionHandler,
 	rolePermissionHandler *rolePermissionHandler.RolePermissionHandler,
+
+	authorizationService authorization.Service,
 ) *gin.Engine {
 
 	router := gin.New()
@@ -40,11 +43,14 @@ func New(
 		middleware.Logger(log),
 		middleware.Timeout(10*time.Second),
 	)
+
+	// ----------------------------------------------------------------
 	// Health Check
+	// ----------------------------------------------------------------
+
 	router.GET("/health", Health)
 
 	router.GET("/test-timeout", func(c *gin.Context) {
-
 		select {
 		case <-time.After(15 * time.Second):
 			c.JSON(200, gin.H{
@@ -58,7 +64,10 @@ func New(
 		}
 	})
 
+	// ----------------------------------------------------------------
 	// API v1
+	// ----------------------------------------------------------------
+
 	v1 := router.Group("/api/v1")
 
 	// ----------------------------------------------------------------
@@ -76,16 +85,24 @@ func New(
 	// ----------------------------------------------------------------
 
 	protected := v1.Group("")
-	protected.Use(middleware.Auth(cfg.JWT.Secret))
+	protected.Use(
+		middleware.Auth(cfg.JWT.Secret),
+	)
 
+	// ----------------------------------------------------------------
 	// Auth
+	// ----------------------------------------------------------------
+
 	protectedAuth := protected.Group("/auth")
 	{
 		protectedAuth.GET("/me", authHandler.Me)
 		protectedAuth.POST("/logout", authHandler.Logout)
 	}
 
+	// ----------------------------------------------------------------
 	// Users
+	// ----------------------------------------------------------------
+
 	users := protected.Group("/users")
 	{
 		users.POST("", userHandler.Create)
@@ -95,17 +112,27 @@ func New(
 		users.DELETE("/:id", userHandler.Delete)
 	}
 
+	// ----------------------------------------------------------------
 	// Organizations
+	// ----------------------------------------------------------------
+
+	// ----------------------------------------------------------------
+	// Organizations
+	// ----------------------------------------------------------------
+
 	organizations := protected.Group("/organizations")
 	{
 		organizations.POST("", orgHandler.Create)
 		organizations.GET("", orgHandler.GetAll)
-		organizations.GET("/:id", orgHandler.GetByID)
-		organizations.PUT("/:id", orgHandler.Update)
-		organizations.DELETE("/:id", orgHandler.Delete)
+		organizations.GET("/:organization_id", orgHandler.GetByID)
+		organizations.PUT("/:organization_id", orgHandler.Update)
+		organizations.DELETE("/:organization_id", orgHandler.Delete)
 	}
 
+	// ----------------------------------------------------------------
 	// Memberships
+	// ----------------------------------------------------------------
+
 	memberships := protected.Group("/memberships")
 	{
 		memberships.POST("", membershipHandler.Create)
@@ -115,7 +142,10 @@ func New(
 		memberships.DELETE("/:id", membershipHandler.Delete)
 	}
 
+	// ----------------------------------------------------------------
 	// Roles
+	// ----------------------------------------------------------------
+
 	roles := protected.Group("/roles")
 	{
 		roles.POST("", roleHandler.Create)
@@ -125,28 +155,110 @@ func New(
 		roles.DELETE("/:id", roleHandler.Delete)
 	}
 
+	// ----------------------------------------------------------------
 	// Permissions
+	// ----------------------------------------------------------------
+
 	permissions := protected.Group("/permissions")
 	{
 		permissions.POST("", permissionHandler.Create)
 		permissions.GET("", permissionHandler.GetAll)
 
-		// Static route BEFORE /:id
-		permissions.GET("/role/:role_id", permissionHandler.GetByRoleID)
+		permissions.GET(
+			"/role/:role_id",
+			permissionHandler.GetByRoleID,
+		)
 
 		permissions.GET("/:id", permissionHandler.GetByID)
 		permissions.PUT("/:id", permissionHandler.Update)
 		permissions.DELETE("/:id", permissionHandler.Delete)
 	}
 
+	// ----------------------------------------------------------------
 	// Role Permissions
-	rolePermissions := protected.Group("/roles/:role_id/permissions")
+	// ----------------------------------------------------------------
+
+	rolePermissions := protected.Group("/roles/:id/permissions")
 	{
-		rolePermissions.POST("", rolePermissionHandler.AssignPermission)
-		rolePermissions.GET("", rolePermissionHandler.GetPermissions)
+		rolePermissions.POST(
+			"",
+			rolePermissionHandler.AssignPermission,
+		)
+
+		rolePermissions.GET(
+			"",
+			rolePermissionHandler.GetPermissions,
+		)
 	}
 
-	protected.DELETE("/roles/:role_id/permissions/:permission_id", rolePermissionHandler.RevokePermission)
+	protected.DELETE(
+		"/roles/:id/permissions/:permission_id",
+		rolePermissionHandler.RevokePermission,
+	)
 
+	// ================================================================
+	// ORGANIZATION SCOPED ROUTES
+	// ================================================================
+
+	organizationScoped := protected.Group(
+		"/organizations/:organization_id",
+	)
+
+	organizationScoped.Use(
+		middleware.OrganizationContext(),
+	)
+
+	// ------------------------------------------------------------
+	// Organization Memberships
+	// ------------------------------------------------------------
+
+	organizationMemberships := organizationScoped.Group(
+		"/memberships",
+	)
+
+	organizationMemberships.POST(
+		"",
+		middleware.RequirePermission(
+			authorizationService,
+			authorization.MembershipCreate,
+		),
+		membershipHandler.Create,
+	)
+
+	organizationMemberships.GET(
+		"",
+		middleware.RequirePermission(
+			authorizationService,
+			authorization.MembershipRead,
+		),
+		membershipHandler.GetAllByOrganization,
+	)
+
+	organizationMemberships.GET(
+		"/:id",
+		middleware.RequirePermission(
+			authorizationService,
+			authorization.MembershipRead,
+		),
+		membershipHandler.GetByIDAndOrganization,
+	)
+
+	organizationMemberships.PUT(
+		"/:id",
+		middleware.RequirePermission(
+			authorizationService,
+			authorization.MembershipUpdate,
+		),
+		membershipHandler.UpdateByOrganization,
+	)
+
+	organizationMemberships.DELETE(
+		"/:id",
+		middleware.RequirePermission(
+			authorizationService,
+			authorization.MembershipDelete,
+		),
+		membershipHandler.DeleteByOrganization,
+	)
 	return router
 }

@@ -18,6 +18,7 @@ import (
 type MembershipService interface {
 	Create(
 		ctx context.Context,
+		organizationID uint,
 		req dto.CreateMembershipRequest,
 	) (*dto.MembershipResponse, error)
 
@@ -31,15 +32,40 @@ type MembershipService interface {
 		id uint,
 	) (*dto.MembershipResponse, error)
 
+	FindByIDAndOrganizationID(
+		ctx context.Context,
+		id uint,
+		organizationID uint,
+	) (*dto.MembershipResponse, error)
+
+	FindAllByOrganizationID(
+		ctx context.Context,
+		organizationID uint,
+		req pagination.Request,
+	) ([]dto.MembershipResponse, pagination.Meta, error)
+
 	Update(
 		ctx context.Context,
 		id uint,
 		req dto.UpdateMembershipRequest,
 	) (*dto.MembershipResponse, error)
 
+	UpdateByOrganizationID(
+		ctx context.Context,
+		id uint,
+		organizationID uint,
+		req dto.UpdateMembershipRequest,
+	) (*dto.MembershipResponse, error)
+
 	Delete(
 		ctx context.Context,
 		id uint,
+	) error
+
+	DeleteByOrganizationID(
+		ctx context.Context,
+		id uint,
+		organizationID uint,
 	) error
 }
 
@@ -56,15 +82,20 @@ func NewMembershipService(
 	}
 }
 
+// ================================================================
+// CREATE
+// ================================================================
+
 func (s *membershipService) Create(
 	ctx context.Context,
+	organizationID uint,
 	req dto.CreateMembershipRequest,
 ) (*dto.MembershipResponse, error) {
 
 	existing, err := s.membershipRepo.FindByUserAndOrganization(
 		ctx,
 		req.UserID,
-		req.OrganizationID,
+		organizationID,
 	)
 
 	if err == nil && existing != nil {
@@ -76,18 +107,25 @@ func (s *membershipService) Create(
 	}
 
 	membership := &model.Membership{
-		OrganizationID: req.OrganizationID,
+		OrganizationID: organizationID,
 		UserID:         req.UserID,
 		RoleID:         req.RoleID,
 		JoinedAt:       time.Now(),
 	}
 
-	if err := s.membershipRepo.Create(ctx, membership); err != nil {
+	if err := s.membershipRepo.Create(
+		ctx,
+		membership,
+	); err != nil {
 		return nil, err
 	}
 
 	return toMembershipResponse(membership), nil
 }
+
+// ================================================================
+// FIND ALL
+// ================================================================
 
 func (s *membershipService) FindAll(
 	ctx context.Context,
@@ -104,30 +142,86 @@ func (s *membershipService) FindAll(
 		return nil, pagination.Meta{}, err
 	}
 
-	response := make([]dto.MembershipResponse, 0, len(memberships))
+	response := make(
+		[]dto.MembershipResponse,
+		0,
+		len(memberships),
+	)
 
 	for _, membership := range memberships {
-		response = append(response, dto.MembershipResponse{
-			ID:             membership.ID,
-			UserID:         membership.UserID,
-			OrganizationID: membership.OrganizationID,
-			RoleID:         membership.RoleID,
-		})
+		response = append(
+			response,
+			*toMembershipResponse(&membership),
+		)
 	}
 
-	meta := pagination.NewMeta(req, total)
+	meta := pagination.NewMeta(
+		req,
+		total,
+	)
 
 	return response, meta, nil
 }
+
+// ================================================================
+// FIND ALL BY ORGANIZATION
+// ================================================================
+
+func (s *membershipService) FindAllByOrganizationID(
+	ctx context.Context,
+	organizationID uint,
+	req pagination.Request,
+) ([]dto.MembershipResponse, pagination.Meta, error) {
+
+	req.Normalize()
+
+	memberships, total, err :=
+		s.membershipRepo.FindAllByOrganizationID(
+			ctx,
+			organizationID,
+			req,
+		)
+
+	if err != nil {
+		return nil, pagination.Meta{}, err
+	}
+
+	response := make(
+		[]dto.MembershipResponse,
+		0,
+		len(memberships),
+	)
+
+	for _, membership := range memberships {
+		response = append(
+			response,
+			*toMembershipResponse(&membership),
+		)
+	}
+
+	meta := pagination.NewMeta(
+		req,
+		total,
+	)
+
+	return response, meta, nil
+}
+
+// ================================================================
+// FIND BY ID
+// ================================================================
 
 func (s *membershipService) FindByID(
 	ctx context.Context,
 	id uint,
 ) (*dto.MembershipResponse, error) {
 
-	membership, err := s.membershipRepo.FindByID(ctx, id)
-	if err != nil {
+	membership, err := s.membershipRepo.FindByID(
+		ctx,
+		id,
+	)
 
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperrors.ErrMembershipNotFound
 		}
@@ -138,15 +232,50 @@ func (s *membershipService) FindByID(
 	return toMembershipResponse(membership), nil
 }
 
+// ================================================================
+// FIND BY ID + ORGANIZATION
+// ================================================================
+
+func (s *membershipService) FindByIDAndOrganizationID(
+	ctx context.Context,
+	id uint,
+	organizationID uint,
+) (*dto.MembershipResponse, error) {
+
+	membership, err :=
+		s.membershipRepo.FindByIDAndOrganizationID(
+			ctx,
+			id,
+			organizationID,
+		)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperrors.ErrMembershipNotFound
+		}
+
+		return nil, err
+	}
+
+	return toMembershipResponse(membership), nil
+}
+
+// ================================================================
+// UPDATE
+// ================================================================
+
 func (s *membershipService) Update(
 	ctx context.Context,
 	id uint,
 	req dto.UpdateMembershipRequest,
 ) (*dto.MembershipResponse, error) {
 
-	membership, err := s.membershipRepo.FindByID(ctx, id)
-	if err != nil {
+	membership, err := s.membershipRepo.FindByID(
+		ctx,
+		id,
+	)
 
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperrors.ErrMembershipNotFound
 		}
@@ -156,21 +285,69 @@ func (s *membershipService) Update(
 
 	membership.RoleID = req.RoleID
 
-	if err := s.membershipRepo.Update(ctx, membership); err != nil {
+	if err := s.membershipRepo.Update(
+		ctx,
+		membership,
+	); err != nil {
 		return nil, err
 	}
 
 	return toMembershipResponse(membership), nil
 }
 
+// ================================================================
+// UPDATE BY ORGANIZATION
+// ================================================================
+
+func (s *membershipService) UpdateByOrganizationID(
+	ctx context.Context,
+	id uint,
+	organizationID uint,
+	req dto.UpdateMembershipRequest,
+) (*dto.MembershipResponse, error) {
+
+	membership, err :=
+		s.membershipRepo.FindByIDAndOrganizationID(
+			ctx,
+			id,
+			organizationID,
+		)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperrors.ErrMembershipNotFound
+		}
+
+		return nil, err
+	}
+
+	membership.RoleID = req.RoleID
+
+	if err := s.membershipRepo.Update(
+		ctx,
+		membership,
+	); err != nil {
+		return nil, err
+	}
+
+	return toMembershipResponse(membership), nil
+}
+
+// ================================================================
+// DELETE
+// ================================================================
+
 func (s *membershipService) Delete(
 	ctx context.Context,
 	id uint,
 ) error {
 
-	membership, err := s.membershipRepo.FindByID(ctx, id)
-	if err != nil {
+	membership, err := s.membershipRepo.FindByID(
+		ctx,
+		id,
+	)
 
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return apperrors.ErrMembershipNotFound
 		}
@@ -178,8 +355,46 @@ func (s *membershipService) Delete(
 		return err
 	}
 
-	return s.membershipRepo.Delete(ctx, membership.ID)
+	return s.membershipRepo.Delete(
+		ctx,
+		membership.ID,
+	)
 }
+
+// ================================================================
+// DELETE BY ORGANIZATION
+// ================================================================
+
+func (s *membershipService) DeleteByOrganizationID(
+	ctx context.Context,
+	id uint,
+	organizationID uint,
+) error {
+
+	membership, err :=
+		s.membershipRepo.FindByIDAndOrganizationID(
+			ctx,
+			id,
+			organizationID,
+		)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return apperrors.ErrMembershipNotFound
+		}
+
+		return err
+	}
+
+	return s.membershipRepo.Delete(
+		ctx,
+		membership.ID,
+	)
+}
+
+// ================================================================
+// RESPONSE MAPPER
+// ================================================================
 
 func toMembershipResponse(
 	membership *model.Membership,

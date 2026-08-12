@@ -18,13 +18,15 @@ type AuthHandler struct {
 	authService service.AuthService
 }
 
-func NewAuthHandler(authService service.AuthService) *AuthHandler {
+func NewAuthHandler(
+	authService service.AuthService,
+) *AuthHandler {
 	return &AuthHandler{
 		authService: authService,
 	}
 }
 
-// Login authenticates a user and returns a JWT access token.
+// POST /auth/login
 func (h *AuthHandler) Login(ctx *gin.Context) {
 
 	var req dto.LoginRequest
@@ -56,11 +58,39 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 	)
 }
 
+// POST /auth/register
 func (h *AuthHandler) Register(ctx *gin.Context) {
-	// TODO
+
+	var req dto.RegisterRequest
+
+	if err := validation.BindJSON(ctx, &req); err != nil {
+		return
+	}
+
+	user, err := h.authService.Register(
+		ctx.Request.Context(),
+		req,
+	)
+
+	if err != nil {
+
+		if errors.Is(err, apperrors.ErrEmailAlreadyExists) {
+			response.Conflict(ctx, err.Error())
+			return
+		}
+
+		response.InternalServerError(ctx)
+		return
+	}
+
+	response.Created(
+		ctx,
+		"User registered successfully",
+		user,
+	)
 }
 
-// Me returns the authenticated user's profile.
+// GET /auth/me
 func (h *AuthHandler) Me(ctx *gin.Context) {
 
 	userID, ok := middleware.GetUserID(ctx)
@@ -95,6 +125,7 @@ func (h *AuthHandler) Me(ctx *gin.Context) {
 	)
 }
 
+// POST /auth/logout
 func (h *AuthHandler) Logout(ctx *gin.Context) {
 
 	response.Success(

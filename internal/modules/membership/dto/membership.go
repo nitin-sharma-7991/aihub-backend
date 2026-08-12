@@ -1,9 +1,8 @@
 package dto
 
 type CreateMembershipRequest struct {
-	OrganizationID uint `json:"organization_id" binding:"required"`
-	UserID         uint `json:"user_id" binding:"required"`
-	RoleID         uint `json:"role_id" binding:"required"`
+	UserID uint `json:"user_id" binding:"required"`
+	RoleID uint `json:"role_id" binding:"required"`
 }
 
 type MembershipResponse struct {
