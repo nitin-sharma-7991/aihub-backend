@@ -60,6 +60,11 @@ func main() {
 		logg.Fatal("Database migration failed", zap.Error(err))
 	}
 
+	// Seed default RBAC data
+	if err := database.Seed(db); err != nil {
+		logg.Fatal("Database seeding failed", zap.Error(err))
+	}
+
 	// Initialize Role Module
 	roleModule := roleModule.New(db)
 
