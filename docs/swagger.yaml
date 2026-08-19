@@ -1,0 +1,15 @@
+basePath: /api/v1
+host: localhost:8080
+info:
+  contact: {}
+  description: Production-oriented AI backend API built with Go, Gin, GORM, and PostgreSQL.
+  title: AIHub Backend API
+  version: "1.0"
+paths: {}
+securityDefinitions:
+  BearerAuth:
+    description: 'Enter the JWT token in the format: Bearer <token>'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

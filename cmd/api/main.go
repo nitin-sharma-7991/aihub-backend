@@ -10,6 +10,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/nitin-sharma-7991/aihub-backend/internal/modules/auth"
 	membership "github.com/nitin-sharma-7991/aihub-backend/internal/modules/membership"
 	organization "github.com/nitin-sharma-7991/aihub-backend/internal/modules/organization"
@@ -26,6 +29,18 @@ import (
 
 	"go.uber.org/zap"
 )
+
+// @title AIHub Backend API
+// @version 1.0
+// @description Production-oriented AI backend API built with Go, Gin, GORM, and PostgreSQL.
+
+// @host localhost:8080
+// @BasePath /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Enter the JWT token in the format: Bearer <token>
 
 func main() {
 
@@ -109,6 +124,12 @@ func main() {
 		rolePermissionModule.Handler,
 
 		authorizationService,
+	)
+
+	// Swagger
+	r.GET(
+		"/swagger/*any",
+		ginSwagger.WrapHandler(swaggerFiles.Handler),
 	)
 
 	// Initialize server

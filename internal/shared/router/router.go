@@ -116,10 +116,6 @@ func New(
 	// Organizations
 	// ----------------------------------------------------------------
 
-	// ----------------------------------------------------------------
-	// Organizations
-	// ----------------------------------------------------------------
-
 	organizations := protected.Group("/organizations")
 	{
 		organizations.POST("", orgHandler.Create)
